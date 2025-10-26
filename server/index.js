@@ -1,31 +1,32 @@
-// server/index.js (exemplo mínimo)
-require('dotenv').config();
-const express = require('express');
-const fetch = require('node-fetch'); // or native fetch in modern Node
-const bodyParser = require('body-parser');
+import express from "express";
+import dotenv from "dotenv";
+import { pool, initDB } from "./db.js";
+import { addSubscriberJob } from "./queue.js";
 
+dotenv.config();
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
-app.post('/api/subscribe', async (req, res) => {
-  const { firstName, email, source } = req.body;
-  // aqui você pode salvar no DB (Postgres) antes de enviar ao SendPulse
+await initDB();
 
-  // SendPulse REST: trocar com token real
+app.post("/api/subscribe", async (req, res) => {
   try {
-    const SENDPULSE_TOKEN = process.env.SENDPULSE_TOKEN; // obtenha via API do SendPulse
-    // Exemplo simplificado: usar o endpoint de adding email to address book
-    const addRes = await fetch('https://api.sendpulse.com/smtp/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${SENDPULSE_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, variables: { firstName }, list_ids: [/*id da lista*/] })
-    });
-    // tratar resposta...
-    return res.status(200).json({ ok: true });
+    const { firstName, email } = req.body;
+    if (!email) return res.status(400).json({ error: "E-mail obrigatório" });
+
+    await pool.query(
+      "INSERT INTO leads (first_name, email, source) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING",
+      [firstName || null, email, "ebook-ia"]
+    );
+
+    await addSubscriberJob(firstName, email);
+
+    res.status(202).json({ message: "Lead salvo e enviado para processamento." });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ ok: false, error: err.message });
+    res.status(500).json({ error: "Erro ao registrar lead." });
   }
 });
 
-app.listen(process.env.PORT || 3000, ()=> console.log('server up'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🔥 Servidor rodando na porta ${PORT}`));
