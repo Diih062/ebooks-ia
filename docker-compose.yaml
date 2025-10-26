@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  app:
+    build: ./server
+    environment:
+      - PORT=3000
+      - SENDPULSE_TOKEN=${SENDPULSE_TOKEN}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: leads
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
