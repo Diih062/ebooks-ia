@@ -9,6 +9,12 @@ app.use(express.json());
 
 await initDB();
 
+//Bloco para manter o servidor desperto;
+app.get("/health", (req, res) => {
+  res.status(200).send("✅ Render ativo!");
+});
+
+//Bloco de aplicação das requisições de entrada dos dados do lead
 app.post("/api/subscribe", async (req, res) => {
   try {
     const { firstName, email } = req.body;
