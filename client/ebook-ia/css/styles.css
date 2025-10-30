@@ -1,0 +1,218 @@
+/* Define custom fonts */
+@font-face {
+  font-family: 'Excon';
+  src: url('../assets/fonts/Excon-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap; /* Improves performance by allowing text to render while font loads */
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../assets/fonts/Satoshi-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Custom properties */
+:root {
+  --bg: #0a0f1c;
+  --card: #111936;
+  --accent1: #a855f7;
+  --accent2: #3b82f6;
+  --muted: #94a3b8;
+  --cta-grad: linear-gradient(90deg, var(--accent1), var(--accent2));
+}
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #f5f5f5;
+  font-family: 'Excon', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.45;
+}
+
+/* Hero section */
+.hero {
+  padding: 6rem 1rem;
+  text-align: center;
+  background: radial-gradient(circle at top, #111936, #0a0f1c 70%);
+}
+
+.hero h1 {
+  font-family: 'Satoshi', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 2rem;
+  max-width: 900px;
+  margin: 0 auto 0.7rem;
+  font-weight: 700;
+}
+
+.hero .sub {
+  color: #c7d2fe;
+  max-width: 760px;
+  margin: 0 auto 1.4rem;
+}
+
+.img-hero {
+  max-width: 720px;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(11, 20, 42, .6);
+}
+
+/* CTA */
+.cta {
+  display: inline-block;
+  padding: 12px 26px;
+  border-radius: 12px;
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+  color: #fff;
+  background: var(--cta-grad);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, .18);
+  transition: transform .18s ease, opacity .18s;
+}
+
+.cta:hover {
+  transform: translateY(-3px);
+  opacity: .96;
+}
+
+/* Floating CTA */
+.floating-cta {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: var(--cta-grad);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  z-index: 999;
+}
+
+/* Cards row */
+.cards-row {
+  margin-top: 1.5rem;
+}
+
+.card-box {
+  background: var(--card);
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+  margin: 10px 0;
+  transition: transform .18s;
+  font-family: 'Satoshi', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.card-box:hover {
+  transform: translateY(-6px);
+  background: #1e293b;
+}
+
+/* Form section */
+.form-section {
+  padding: 3.5rem 1rem;
+}
+
+.highlight {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1e1b4b, #111936);
+  border-left: 5px solid #6366f1;
+  text-align: center;
+  font-family: 'Satoshi', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.form-card {
+  max-width: 420px;
+  margin: 18px auto 0;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #243142;
+  background: #0b1220;
+  color: #fff;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-family: 'Excon', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.small {
+  font-size: .8rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Offer section */
+.offer {
+  padding: 3rem 1rem;
+}
+
+.offer-box {
+  display: inline-block;
+  padding: 24px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1e3a8a, #1e40af);
+  color: #fff;
+  margin-top: 18px;
+  font-family: 'Satoshi', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.price-line {
+  font-size: 1.05rem;
+  margin: 0 0 12px;
+}
+
+/* Footer */
+.site-footer {
+  padding: 40px 1rem;
+  color: var(--muted);
+  border-top: 1px solid #1e293b;
+}
+
+/* Accessibility helper */
+.sr-only {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .hero h1 {
+    font-size: 2.6rem;
+  }
+  .img-hero {
+    max-width: 880px;
+  }
+}
