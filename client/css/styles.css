@@ -1,27 +1,5 @@
-/* Define custom fonts */
-@font-face {
-  font-family: 'Excon';
-  src: url('../assets/fonts/Excon-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap; /* Improves performance by allowing text to render while font loads */
-}
-
-@font-face {
-  font-family: 'Satoshi';
-  src: url('../assets/fonts/Satoshi-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  src: url('../assets/fonts/Poppins-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+/* Import Google Fonts (substitui carregamento local de fontes para compatibilidade no GitHub Pages) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@700&display=swap');
 
 /* Custom properties */
 :root {
@@ -42,7 +20,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: #f5f5f5;
-  font-family: 'Excon', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.45;
@@ -56,7 +34,7 @@ body {
 }
 
 .hero h1 {
-  font-family: 'Satoshi', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 2rem;
   max-width: 900px;
   margin: 0 auto 0.7rem;
@@ -75,6 +53,14 @@ body {
   height: auto;
   border-radius: 12px;
   box-shadow: 0 20px 50px rgba(11, 20, 42, .6);
+  object-fit: cover;
+}
+
+/* Utility for responsive images */
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
 /* CTA */
@@ -215,4 +201,12 @@ body {
   .img-hero {
     max-width: 880px;
   }
+}
+
+/* Small screens tweaks */
+@media (max-width: 480px) {
+  .hero h1 { font-size: 1.6rem; }
+  .cta { padding: 10px 18px; font-size: 0.9rem; }
+  .hero { padding: 3rem 1rem; }
+  .form-section { padding: 2rem 1rem; }
 }
