@@ -16,8 +16,8 @@ export async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS leads (
       id SERIAL PRIMARY KEY,
-      first_name VARCHAR(100) NOT NULL,
-      email VARCHAR(150) UNIQUE NOT NULL,
+      first_name VARCHAR(100),
+      email VARCHAR(255) UNIQUE NOT NULL,
       sendpulse_id VARCHAR(50),        -- ID do contato retornado pela API SendPulse
       send_status VARCHAR(20) DEFAULT 'pending',
       created_at TIMESTAMP DEFAULT NOW(),
