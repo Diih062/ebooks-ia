@@ -1,38 +1,33 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
-import { pool, initDB } from "./db.js";
-import { addSubscriberJob } from "./queue.js";
+import leadsRouter from "./routes/leadsRoutes.js";
+import { initDB } from "./db/index.js";
 
 dotenv.config();
+
 const app = express();
+app.use(cors());
 app.use(express.json());
 
+// Conecta ao banco PostgreSQL antes de iniciar
 await initDB();
 
-//Bloco para manter o servidor desperto;
-app.get("/health", (req, res) => {
-  res.status(200).send("✅ Render ativo!");
-});
-
-//Bloco de aplicação das requisições de entrada dos dados do lead
-app.post("/api/subscribe", async (req, res) => {
+// Health check endpoint (para UptimeRobot e Render)
+app.get('/health', async (req, res) => {
   try {
-    const { firstName, email } = req.body;
-    if (!email) return res.status(400).json({ error: "E-mail obrigatório" });
-
-    await pool.query(
-      "INSERT INTO leads (first_name, email, source) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING",
-      [firstName || null, email, "ebook-ia"]
-    );
-
-    await addSubscriberJob(firstName, email);
-
-    res.status(202).json({ message: "Lead salvo e enviado para processamento." });
+    // opcional: teste leve ao DB
+    const { rows } = await pool.query('SELECT 1');
+    if (!rows) throw new Error('DB check failed');
+    return res.status(200).json({ status: 'ok', db: 'connected' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao registrar lead." });
+    return res.status(500).json({ status: 'error', error: err.message });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🔥 Servidor rodando na porta ${PORT}`));
+
+// Rotas principais
+app.use("/api/leads", leadsRouter);
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`🚀 API rodando na porta ${PORT}`));
