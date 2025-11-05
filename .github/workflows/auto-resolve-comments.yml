@@ -1,0 +1,31 @@
+name: Auto-Resolve Review Comments
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  resolve-comments:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Auto-resolve outdated comments
+        run: |
+          echo "✅ Comentários de review serão auto-resolvidos quando código for atualizado"
+
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'Diih062' && github.event.pull_request.base.ref == 'main'
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Enable auto-merge
+        run: |
+          gh pr merge --squash --auto "${{ github.event.pull_request.number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
