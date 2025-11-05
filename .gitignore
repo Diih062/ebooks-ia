@@ -1,1 +1,34 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# Env files
+.env
+.env.local
+.env.development
+.env.production
 server/.env
+
+# Temporary folders
+tmp/
+server/tmp/
+.cache/
+dist/
+build/
+coverage/
+
+# Logs
+logs/
+*.log
+*.csv
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Config Environment GitHub
+.github
+server/db/node_modules/

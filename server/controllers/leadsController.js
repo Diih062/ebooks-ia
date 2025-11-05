@@ -1,37 +1,40 @@
+import pool from "../db/index.js";
 import { addSubscriber } from "../services/sendpulse.js";
 import { addEmailToQueue } from "../services/queue.js";
 
 export async function registerLead(req, res) {
+  const { firstName, email } = req.body;
+
   try {
-    const { firstName, email } = req.body;
+    // 1️⃣ Inserção no banco
+    const result = await pool.query(
+      "INSERT INTO leads (first_name, email) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING RETURNING *",
+      [firstName, email]
+    );
 
-    if (!firstName || !email) {
-      return res.status(400).json({ error: "Nome e e-mail são obrigatórios." });
+    if (!result.rowCount) {
+      return res.status(200).json({ message: "E-mail já cadastrado." });
     }
 
-    // 1️⃣ Adiciona lead na SendPulse
-    try {
-      await addSubscriber(firstName, email);
-    } catch (err) {
-      console.error("⚠️ Erro ao adicionar em SendPulse:", err.message);
-      // Continuar mesmo se SendPulse falhar
+    // 2️⃣ Replica no SendPulse
+    const spResponse = await addSubscriber(firstName, email);
+    if (spResponse.id) {
+      await pool.query("UPDATE leads SET sendpulse_id=$1 WHERE email=$2", [
+        spResponse.id,
+        email
+      ]);
     }
 
-    // 2️⃣ Cria jobs assíncronos de envio de e-mails
-    try {
-      await addEmailToQueue({ firstName, email, delayType: "imediato" });
-      await addEmailToQueue({ firstName, email, delayType: "24h" });
-      await addEmailToQueue({ firstName, email, delayType: "72h" });
-    } catch (err) {
-      console.error("⚠️ Erro ao agendar e-mails:", err.message);
-    }
+    // 3️⃣ Enfileira os envios automáticos
+    await addEmailToQueue({ firstName, email, delayType: "imediato" });
+    await addEmailToQueue({ firstName, email, delayType: "24h" });
+    await addEmailToQueue({ firstName, email, delayType: "72h" });
 
-    res.status(200).json({
-      success: true,
-      message: "Lead registrado e e-mails agendados com sucesso.",
-    });
+    res
+      .status(200)
+      .json({ success: true, message: "Lead registrado e e-mails agendados." });
   } catch (err) {
-    console.error("Erro ao registrar lead:", err);
-    res.status(500).json({ error: "Falha ao processar o lead." });
+    console.error("❌ Erro ao registrar lead:", err);
+    res.status(500).json({ error: "Falha ao registrar lead." });
   }
 }
