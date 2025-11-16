@@ -3,6 +3,10 @@ import Redis from "ioredis";
 import dotenv from "dotenv";
 import { persistJob, markJobQueued, ensureEmailJobsTable } from "./persistence.js";
 
+// Serviço de fila central. Responsável por:
+// - Criar conexão com Redis (se configurado)
+// - Fornecer função `addEmailToQueue` que persiste o job em DB antes de enfileirar
+// Isso evita perda silenciosa de jobs quando o Redis aplica eviction ou fica indisponível.
 dotenv.config();
 
 let emailQueue;

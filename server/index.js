@@ -9,6 +9,7 @@ import kiwifyWebhook from "./routes/kiwifyWebhook.js";
 import { initDB, pool } from "./db/index.js";
 import Redis from "ioredis";
 import { ensureEmailJobsTable } from "./services/persistence.js";
+import { startRedisMonitor, register as metricsRegister } from "./services/redisMonitor.js";
 
 dotenv.config();
 
@@ -18,6 +19,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Kiwify webhooks às vezes usam x-www-form-urlencoded
+
+// NOTE: este arquivo é o ponto de entrada do backend.
+// Comentários e checagens abaixo ajudam manutenção e debugging rápido.
 
 // 🔌 Conexão com PostgreSQL
 await initDB();
@@ -75,6 +79,20 @@ app.get("/health", async (req, res) => {
     });
   }
 });
+
+// Expor métricas Prometheus
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', metricsRegister.contentType);
+    const m = await metricsRegister.metrics();
+    res.send(m);
+  } catch (e) {
+    res.status(500).send('error');
+  }
+});
+
+// Iniciar monitor do Redis (não bloqueante)
+startRedisMonitor().then(() => console.log('🔍 Redis monitor iniciado')).catch((e) => console.error('⚠️ Falha ao iniciar redis monitor:', e.message));
 
 // 🧩 Webhook da Kiwify
 app.use("/api", kiwifyWebhook);

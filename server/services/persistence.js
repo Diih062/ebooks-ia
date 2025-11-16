@@ -1,5 +1,7 @@
 import { pool } from "../db/index.js";
 
+// Helpers de persistência de jobs — abstraem operações na tabela `email_jobs`.
+// A tabela armazena o estado dos envios para permitir requeue e auditoria.
 export async function ensureEmailJobsTable() {
   const sql = `
   CREATE TABLE IF NOT EXISTS email_jobs (

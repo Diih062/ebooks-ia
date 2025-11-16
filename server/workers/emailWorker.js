@@ -4,6 +4,12 @@ import dotenv from "dotenv";
 import fetch from "node-fetch";
 import { getPendingJobs } from "../services/persistence.js";
 
+// Worker responsável por processar jobs de envio de e-mail.
+// - Tenta se conectar ao Redis de forma não bloqueante (lazyConnect)
+// - Ao processar um job, atualiza o registro persistido (`persisted_id`) na tabela `email_jobs`
+// - No startup, o worker reenfileira jobs pendentes encontrados no DB para garantir processamento
+//   quando o Redis volta a ficar disponível.
+
 dotenv.config();
 
 if (!process.env.REDIS_URL) {

@@ -2,6 +2,11 @@ import pool from "../db/index.js";
 import { addSubscriber } from "../services/sendpulse.js";
 import { addEmailToQueue } from "../services/queue.js";
 
+// Controller que orquestra o fluxo de registro de leads:
+// 1) grava no banco local (`leads`)
+// 2) replica no SendPulse
+// 3) enfileira envios imediatos e futuros (imediato, 24h, 72h)
+
 export async function registerLead(req, res) {
   const { firstName, email } = req.body;
 
