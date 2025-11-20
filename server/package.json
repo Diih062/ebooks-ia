@@ -15,7 +15,6 @@
     "dev": "nodemon index.js",
     "itest": "node tests/run-integration.js",
     "test:unit": "node --test tests/unit/*.js",
-    "migrate": "node scripts/migrate.js",
     "migrate:pg": "node-pg-migrate up"
   },
   "dependencies": {
