@@ -77,3 +77,26 @@ export async function addEmailToQueue({ email, firstName, delayType }) {
     console.error("⚠️ Não foi possível agendar e-mail na fila:", err.message);
   }
 }
+
+// Requeue helper: refileira jobs pendentes do DB para a fila (usado no startup do worker)
+export async function requeuePendingFromDB(limit = 100) {
+  try {
+    await ensureEmailJobsTable();
+    const pending = await getPendingJobs(limit);
+    if (pending && pending.length) {
+      for (const j of pending) {
+        try {
+          await emailQueue.add("sendEmail", { email: j.email, firstName: j.first_name, delayType: j.delay_type, persisted_id: j.id });
+          await markJobQueued(j.id);
+        } catch (e) {
+          console.error("Erro requeue (queue):", e.message);
+        }
+      }
+      console.log(`🔁 Requeueado ${pending.length} jobs pendentes do DB (queue)`);
+    }
+  } catch (e) {
+    console.error("Erro ao requeuear do DB:", e.message);
+  }
+}
+
+export { emailQueue };

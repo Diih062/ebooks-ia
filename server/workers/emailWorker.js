@@ -1,8 +1,8 @@
-import { Worker, Queue } from "bullmq";
+import { Worker } from "bullmq";
 import Redis from "ioredis";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
-import { getPendingJobs, ensureEmailJobsTable, markJobQueued } from "../services/persistence.js";
+import { requeuePendingFromDB } from "../services/queue.js";
 
 // Worker responsável por processar jobs de envio de e-mail.
 // - Tenta se conectar ao Redis de forma não bloqueante (lazyConnect)
@@ -38,25 +38,8 @@ const connection = new Redis(redisUrl, {
 connection.on("error", (err) => {
   console.error("⚠️ Redis worker error:", err && err.message ? err.message : err);
 });
-// Instancia a fila (usada tanto para requeue quanto pelo Worker)
-const emailQueue = new Queue('emailQueue', { connection });
-
-// No startup, requeue jobs pendentes do DB (limite conservador)
-(async function requeuePending(){
-  try{
-    await ensureEmailJobsTable();
-    const pending = await getPendingJobs(100);
-    if(pending && pending.length){
-      console.log(`🔁 Requeueando ${pending.length} jobs pendentes do DB`);
-      for(const j of pending){
-        try{
-          await emailQueue.add('sendEmail', { email: j.email, firstName: j.first_name, delayType: j.delay_type, persisted_id: j.id });
-          await markJobQueued(j.id);
-        }catch(e){ console.error('Erro requeue:', e.message); }
-      }
-    }
-  }catch(e){ /* ignore */ }
-})();
+// Delegar requeue ao module de queue (centraliza lógica e evita duplicação)
+requeuePendingFromDB().catch(() => {});
 
 const worker = new Worker(
   "emailQueue",
@@ -131,3 +114,20 @@ worker.on("failed", (job, err) => {
     });
   }
 });
+
+// Graceful shutdown for worker process
+async function shutdownWorker() {
+  try {
+    console.log('🛑 Fechando worker (graceful)...');
+    await worker.close();
+    try { await connection.disconnect(); } catch (e) {}
+    console.log('🛑 Worker fechado');
+    process.exit(0);
+  } catch (e) {
+    console.error('Erro ao fechar worker:', e.message);
+    process.exit(1);
+  }
+}
+
+process.on('SIGINT', shutdownWorker);
+process.on('SIGTERM', shutdownWorker);

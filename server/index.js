@@ -91,8 +91,11 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
-// Iniciar monitor do Redis (não bloqueante)
-startRedisMonitor().then(() => console.log('🔍 Redis monitor iniciado')).catch((e) => console.error('⚠️ Falha ao iniciar redis monitor:', e.message));
+// Iniciar monitor do Redis (não bloqueante) e manter referência para shutdown
+const redisMonitor = await startRedisMonitor().then((m) => {
+  console.log('🔍 Redis monitor iniciado');
+  return m;
+}).catch((e) => { console.error('⚠️ Falha ao iniciar redis monitor:', e.message); return null; });
 
 // 🧩 Webhook da Kiwify
 app.use("/api", kiwifyWebhook);
@@ -106,6 +109,25 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () =>
+const server = app.listen(PORT, () =>
   console.log(`🚀 API rodando na porta ${PORT}`)
 );
+
+// Graceful shutdown
+async function shutdown() {
+  console.log('🛑 Shutdown iniciado...');
+  try {
+    server.close(() => console.log('HTTP server closed'));
+    try { await pool.end(); console.log('Pool DB closed'); } catch (e) { console.error('Erro fechando DB pool:', e.message); }
+    if (redisMonitor && redisMonitor.stop) {
+      try { await redisMonitor.stop(); console.log('Redis monitor stopped'); } catch (e) { console.error('Erro fechando redis monitor:', e.message); }
+    }
+    process.exit(0);
+  } catch (e) {
+    console.error('Erro durante shutdown:', e.message);
+    process.exit(1);
+  }
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
