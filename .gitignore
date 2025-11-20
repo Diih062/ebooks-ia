@@ -30,5 +30,5 @@ Thumbs.db
 .idea/
 
 # Config Environment GitHub
-.github
+# Note: keep `.github` tracked so workflows are versioned in the repo
 server/db/node_modules/
