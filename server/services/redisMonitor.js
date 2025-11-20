@@ -28,11 +28,18 @@ const maxmemoryPolicyGauge = new client.Gauge({ name: `${METRIC_NS}_maxmemory_po
 let lastEvicted = 0;
 
 export async function startRedisMonitor() {
+  // Em ambiente de teste não iniciamos o monitor para evitar timers/clients
+  if (process.env.NODE_ENV === 'test') {
+    console.warn('⚠️ NODE_ENV=test — Redis monitor não será iniciado');
+    redisUpGauge.set(0);
+    return { stop: async () => {}, register };
+  }
+
   const rawUrl = process.env.REDIS_URL;
   if (!rawUrl) {
     console.warn('⚠️ REDIS_URL não configurado — monitor do Redis não será iniciado');
     redisUpGauge.set(0);
-    return;
+    return { stop: async () => {}, register };
   }
 
   const redisUrl = normalizeRedisUrl(rawUrl);

@@ -15,7 +15,8 @@
     "dev": "nodemon index.js",
     "itest": "node tests/run-integration.js",
     "test:unit": "node --test tests/unit/*.js",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "node scripts/migrate.js",
+    "migrate:pg": "node-pg-migrate up"
   },
   "dependencies": {
     "bullmq": "^5.28.2",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "eslint": "^8.57.0",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "node-pg-migrate": "^7.5.0"
   }
 }
