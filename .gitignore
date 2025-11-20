@@ -29,6 +29,7 @@ Thumbs.db
 .vscode/
 .idea/
 
+server/db/node_modules/
 # Config Environment GitHub
-.github
+# .github is tracked to allow workflows to be versioned
 server/db/node_modules/
