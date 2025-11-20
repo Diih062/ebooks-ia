@@ -1,0 +1,84 @@
+name: Integration Tests (server)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ebooks_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U postgres
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Wait for Postgres
+        env:
+          PGPASSWORD: postgres
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done
+
+      - name: Run DB migrations
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/ebooks_test
+        run: |
+          npx node-pg-migrate up --migrations-dir ./migrations --database-url "$DATABASE_URL"
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Start server
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/ebooks_test
+          REDIS_URL: redis://localhost:6379
+          PORT: 3000
+          NODE_ENV: test
+        run: |
+          nohup npm start > server-integration.log 2>&1 &
+          n=0
+          until curl -sSf http://127.0.0.1:3000/health || [ $n -gt 30 ]; do n=$((n+1)); sleep 1; done
+          echo "--- server log ---"
+          sed -n '1,200p' server-integration.log || true
+
+      - name: Run integration tests
+        run: npm run itest
