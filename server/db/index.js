@@ -5,9 +5,11 @@ dotenv.config();
 
 const { Pool } = pkg;
 
+const useSsl = process.env.NODE_ENV === 'production';
+
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: useSsl ? { rejectUnauthorized: false } : false,
 });
 
 export async function initDB() {

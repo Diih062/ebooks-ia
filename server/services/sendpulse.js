@@ -1,5 +1,9 @@
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+
+// Serviço de integração com SendPulse.
+// - Obtém token via client_credentials e faz caching em memória (ttl baseado em expires_in)
+// - Fornece `addSubscriber` para enviar contatos ao endereço do book configurado
 dotenv.config();
 
 let cachedToken = null;
