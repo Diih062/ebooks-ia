@@ -24,8 +24,9 @@ if (process.env.REDIS_URL) {
     redisUrl = rawUrl.replace("redis://", "rediss://");
   }
 
+  // BullMQ requires `maxRetriesPerRequest` to be null — leave retry handling to BullMQ
   const connection = new Redis(redisUrl, {
-    maxRetriesPerRequest: 2,
+    maxRetriesPerRequest: null,
     lazyConnect: true,
     connectTimeout: 5000,
     // retryStrategy determina quando tentar reconectar (null = parar)

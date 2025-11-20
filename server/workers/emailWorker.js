@@ -1,8 +1,8 @@
-import { Worker } from "bullmq";
+import { Worker, Queue } from "bullmq";
 import Redis from "ioredis";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
-import { getPendingJobs } from "../services/persistence.js";
+import { getPendingJobs, ensureEmailJobsTable, markJobQueued } from "../services/persistence.js";
 
 // Worker responsável por processar jobs de envio de e-mail.
 // - Tenta se conectar ao Redis de forma não bloqueante (lazyConnect)
@@ -24,9 +24,10 @@ if (rawUrl.includes("upstash.io") && rawUrl.startsWith("redis://")) {
   redisUrl = rawUrl.replace("redis://", "rediss://");
 }
 
+// When using BullMQ the redis client should set maxRetriesPerRequest to null
 const connection = new Redis(redisUrl, {
   lazyConnect: true,
-  maxRetriesPerRequest: 2,
+  maxRetriesPerRequest: null,
   connectTimeout: 5000,
   retryStrategy: (times) => {
     if (times > 3) return null;
@@ -37,18 +38,20 @@ const connection = new Redis(redisUrl, {
 connection.on("error", (err) => {
   console.error("⚠️ Redis worker error:", err && err.message ? err.message : err);
 });
+// Instancia a fila (usada tanto para requeue quanto pelo Worker)
+const emailQueue = new Queue('emailQueue', { connection });
 
 // No startup, requeue jobs pendentes do DB (limite conservador)
 (async function requeuePending(){
   try{
-    await ensureEmailJobsTable?.();
+    await ensureEmailJobsTable();
     const pending = await getPendingJobs(100);
     if(pending && pending.length){
       console.log(`🔁 Requeueando ${pending.length} jobs pendentes do DB`);
       for(const j of pending){
         try{
           await emailQueue.add('sendEmail', { email: j.email, firstName: j.first_name, delayType: j.delay_type, persisted_id: j.id });
-          await markJobQueued?.(j.id);
+          await markJobQueued(j.id);
         }catch(e){ console.error('Erro requeue:', e.message); }
       }
     }
@@ -61,44 +64,48 @@ const worker = new Worker(
     const { email, firstName, delayType } = job.data;
     console.log(`⏱️ Processando ${delayType} para ${email}`);
 
-    const tokenRes = await fetch("https://api.sendpulse.com/oauth/access_token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        grant_type: "client_credentials",
-        client_id: process.env.SENDPULSE_API_USER_ID,
-        client_secret: process.env.SENDPULSE_API_SECRET
-      })
+    // Use the official `sendpulse-api` library (CommonJS) to ensure payload
+    // format and token handling are correct. Wrap callback API into a Promise.
+    const spModule = await import('sendpulse-api');
+    const sendpulse = spModule.default || spModule;
+
+    const ensureSendpulseInit = () => new Promise((resolve) => {
+      try {
+        // token storage directory (file-based cache)
+        const storage = process.env.SENDPULSE_TOKEN_STORAGE || './tmp/sendpulse_token';
+        sendpulse.init(process.env.SENDPULSE_API_USER_ID, process.env.SENDPULSE_API_SECRET, storage, () => resolve());
+      } catch (e) {
+        // init shouldn't throw, but resolve anyway so we can attempt send and fail gracefully
+        resolve();
+      }
     });
 
-    const { access_token } = await tokenRes.json();
+    await ensureSendpulseInit();
 
     const emailData = {
       html: `<h1>Olá, ${firstName}!</h1><p>Este é seu e-mail ${delayType}.</p>`,
       text: `Olá, ${firstName}! Este é seu e-mail ${delayType}.`,
       subject: `Mensagem automática (${delayType})`,
       from: {
-        name: "Ebooks IA",
+        name: process.env.SENDPULSE_SENDER_NAME || "Ebooks IA",
         email: process.env.SENDPULSE_SENDER_EMAIL
       },
-      to: [{ email }]
+      to: [{ email: email, name: firstName || "" }]
     };
 
-    const sendRes = await fetch("https://api.sendpulse.com/smtp/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(emailData)
+    const sendWithSendpulse = () => new Promise((resolve, reject) => {
+      try {
+        sendpulse.smtpSendMail(function(res){
+          if (res && res.is_error) return reject(res);
+          resolve(res);
+        }, emailData);
+      } catch (err) {
+        reject(err);
+      }
     });
 
-    if (!sendRes.ok) {
-      const errText = await sendRes.text();
-      throw new Error(`Falha ao enviar email: ${errText}`);
-    }
-
-    console.log(`✅ E-mail ${delayType} enviado para ${email}`);
+    const sendResult = await sendWithSendpulse();
+    console.log(`✅ E-mail ${delayType} enviado para ${email}`, sendResult);
     // Se o job veio de persistência, atualiza DB
     if (job.data && job.data.persisted_id) {
       try {
