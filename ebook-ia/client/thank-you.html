@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obrigado - E-book Gratuito</title>
+    <link rel="stylesheet" href="css/thank-you.css">
+    <link rel="icon" type="image/png" href="assets/images/png/ebook-mockup-desktop.png">
+    <meta property="og:image" content="assets/images/webp/ebook-mockup-desktop.webp">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎉 Obrigado! Seu e-book gratuito está a caminho.</h1>
+            <p class="subtitle">
+                Verifique sua caixa de entrada (ou a pasta de spam) — o e-book será
+                enviado para o e-mail informado em até 5 minutos.
+            </p>
+            
+            <!-- Imagem responsiva do mockup de e-books -->
+            <div class="ebook-image-wrapper">
+                <picture>
+                    <!-- Imagem para desktop (1200px+) -->
+                    <source media="(min-width: 1024px)" srcset="assets/images/webp/ebook-mockup-desktop.webp">
+                    
+                    <!-- Imagem para tablet (768px - 1023px) -->
+                    <source media="(min-width: 768px)" srcset="assets/images/webp/ebook-mockup-tablet.webp">
+                    
+                    <!-- Imagem para mobile (até 767px) -->
+                    <source media="(max-width: 767px)" srcset="assets/images/webp/ebook-mockup-mobile.webp">
+                    
+                    <!-- Fallback para navegadores que não suportam picture -->
+                <img src="assets/images/png/ebook-mockup-desktop.png" 
+                         alt="Mockup dos e-books sobre IA e Prompts" 
+                         class="ebook-image"
+                         loading="lazy">
+                </picture>
+            </div>
+            
+            <p class="exclusive-offer">
+                Enquanto isso, aproveite esta <strong>oferta exclusiva</strong> para
+                quem acabou de baixar o e-book gratuito 👇
+            </p>
+        </header>
+
+        <section>
+            <h2>Leve seu aprendizado para o próximo nível</h2>
+            <p class="section-desc">
+                Domine a arte de escrever prompts com o método dos 5 Blocos de Alta
+                Performance. Transforme suas ideias em resultados reais com IA.
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <!-- Ícones responsivos para cada feature -->
+                    <picture>
+                    <source media="(min-width: 768px)" srcset="assets/images/webp/icon-focus.webp">
+                    <img src="assets/images/webp/icon-focus.webp" 
+                             alt="Ícone de foco - alvo com flecha" 
+                             class="feature-icon"
+                             loading="lazy">
+                    </picture>
+                    <h4>✅ 20+ templates práticos</h4>
+                    <p>Aplicáveis em qualquer área — economize tempo e energia.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <picture>
+                    <source media="(min-width: 768px)" srcset="assets/images/webp/icon-clarity.webp">
+                    <img src="assets/images/webp/icon-clarity.webp" 
+                             alt="Ícone de clareza - lâmpada com check" 
+                             class="feature-icon"
+                             loading="lazy">
+                    </picture>
+                    <h4>🧠 Método dos 5 Blocos</h4>
+                    <p>Estrutura que torna qualquer prompt funcional e poderoso.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <picture>
+                    <source media="(min-width: 768px)" srcset="assets/images/webp/icon-productivity.webp">
+                    <img src="assets/images/webp/icon-productivity.webp" 
+                             alt="Ícone de produtividade - cronômetro" 
+                             class="feature-icon"
+                             loading="lazy">
+                    </picture>
+                    <h4>💬 Linguagem natural</h4>
+                    <p>Aprenda a conversar com a IA como um especialista.</p>
+                </div>
+            </div>
+
+            <div class="cta-box">
+                <h3>
+                    Use o cupom <span class="coupon">PROMPT25</span> e leve o
+                    e-book de <span class="price-old">R$14,90</span>
+                    por <span class="price-new">R$11,18</span>
+                </h3>
+                <p class="cta-note">
+                    ⚡ Oferta exclusiva para novos assinantes — válida por tempo limitado!
+                </p>
+                
+                <!-- Opção 1: Usar imagem do botão (recomendado para consistência visual) -->
+                <div class="cta-button-wrapper">
+                    <a href="https://pay.kiwify.com.br/CUc25LB" 
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                        <picture>
+                            <source media="(min-width: 768px)" srcset="assets/images/webp/cta-button.webp">
+                            <img src="assets/images/webp/cta-button.webp" 
+                                 alt="Quero dominar a IA agora" 
+                                 class="cta-button-image">
+                        </picture>
+                    </a>
+                </div>
+                
+                <!-- Opção 2: Botão CSS (fallback) - Remova o comentário se não tiver a imagem -->
+                <!--
+                <a href="https://pay.kiwify.com.br/CUc25LB" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="cta-button">
+                    Quero dominar a IA agora
+                </a>
+                -->
+            </div>
+        </section>
+
+        <footer>
+            © 2025 - Funil IA Pro | Todos os direitos reservados.
+        </footer>
+    </div>
+</body>
+</html>
